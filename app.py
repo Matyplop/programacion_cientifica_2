@@ -4,10 +4,12 @@ import numpy as np # Necesario para algunas operaciones de Pandas/Seaborn
 import os
 import matplotlib.pyplot as plt 
 from datetime import datetime
+import seaborn as sns
 
 # Importar tus módulos personalizados
 from data_cleaner import DataCleaner
-from models import Registro, Proyecto, Area
+from models import Registro, Proyecto, Area, Equipo, Indicadores
+
 from visualizador_dinamico import generar_graficos_dinamicos
 
 # --- Configuración de la Página ---
@@ -155,9 +157,9 @@ st.markdown("---")
 
 # --- PASO 2: Resumen Textual del Análisis POO ---
 st.header("2. Resumen del Análisis Orientado a Objetos")
-registros_list = []
+registros_obj_list = [] # Cambiado el nombre para evitar confusión con la variable 'registros' de Colab
 proyectos_dict = {}
-areas_dict = {}
+equipos_global_dict = {}
 
 required_cols_registro = ["id", "proyecto", "area", "equipo", "costo_estimado", "costo_real", "avance_estimado", "avance_real", "cantidad_trabajadores"]
 if not all(col in dataframe_final_limpio.columns for col in required_cols_registro):
@@ -165,52 +167,98 @@ if not all(col in dataframe_final_limpio.columns for col in required_cols_regist
 else:
     for _, row in dataframe_final_limpio.iterrows():
         try:
-            registros_list.append(Registro(
+            reg_obj = Registro( # Cambiado el nombre de la variable
                 id=row["id"], proyecto=row["proyecto"], area=row["area"], equipo=row["equipo"],
                 costo_estimado=row["costo_estimado"], costo_real=row["costo_real"],
                 avance_estimado=row["avance_estimado"], avance_real=row["avance_real"],
-                trabajadores=row["cantidad_trabajadores"]
-            ))
-        except Exception: pass 
+                trabajadores=row["cantidad_trabajadores"] # El constructor de Registro espera 'trabajadores'
+            )
+            registros_obj_list.append(reg_obj) # Usar el nuevo nombre
+        except Exception as e:
+            # st.warning(f"Error al crear objeto Registro para fila {row.get('id', 'N/A')}: {e}") # Opcional: loguear error
+            pass
 
-    for r_obj in registros_list:
-        if r_obj.proyecto:
+    for r_obj in registros_obj_list: # Usar el nuevo nombre
+        if r_obj.proyecto: # Asegurarse que el proyecto no sea None o vacío
             if r_obj.proyecto not in proyectos_dict:
                 proyectos_dict[r_obj.proyecto] = Proyecto(r_obj.proyecto)
             proyectos_dict[r_obj.proyecto].agregar_registro(r_obj)
-    for r_obj in registros_list:
-        if r_obj.area:
-            if r_obj.area not in areas_dict:
-                areas_dict[r_obj.area] = Area(r_obj.area)
-            areas_dict[r_obj.area].agregar_registro(r_obj)
 
-    col_poo_proy, col_poo_area = st.columns(2)
-    with col_poo_proy:
-        st.subheader("Análisis por Proyecto")
-        if proyectos_dict:
-            for nombre_proyecto, proyecto_obj in sorted(proyectos_dict.items()):
-                if not proyecto_obj.registros: continue
-                st.markdown(f"**📌 {nombre_proyecto}**")
-                st.markdown(f"&nbsp;&nbsp;- Costo Est.: ${proyecto_obj.costo_total_estimado():,.0f}")
-                st.markdown(f"&nbsp;&nbsp;- Costo Real: ${proyecto_obj.costo_total_real():,.0f}")
-                st.markdown(f"&nbsp;&nbsp;- Desviación: ${proyecto_obj.desviacion_presupuesto():,.0f}")
-                st.markdown(f"&nbsp;&nbsp;- Rendimiento: {proyecto_obj.rendimiento_promedio():.2f}%")
-        else: st.info("No hay datos de proyectos para resumir.")
-    with col_poo_area:
-        st.subheader("Análisis por Área")
-        if areas_dict:
-            for nombre_area, area_obj in sorted(areas_dict.items()):
-                if not area_obj.registros: continue
-                st.markdown(f"**📍 {nombre_area}**")
-                st.markdown(f"&nbsp;&nbsp;- Eficiencia: {area_obj.eficiencia_promedio():.2f}%")
-                st.markdown(f"&nbsp;&nbsp;- Sobrecosto: ${area_obj.total_sobrecosto():,.0f}")
-        else: st.info("No hay datos de áreas para resumir.")
-st.markdown("---")
+        # Para análisis global de equipos (opcional, si quieres un resumen de equipos fuera de proyectos)
+        if r_obj.equipo:
+            if r_obj.equipo not in equipos_global_dict:
+                equipos_global_dict[r_obj.equipo] = Equipo(r_obj.equipo)
+            equipos_global_dict[r_obj.equipo].agregar_registro(r_obj)
+
+    st.subheader("📊 Indicadores Generales del Conjunto de Datos")
+    if registros_obj_list: # Usar el nuevo nombre
+        eficiencia_gral = Indicadores.eficiencia_general(registros_obj_list)
+        st.metric(label="Eficiencia General (Todos los Registros)", value=f"{eficiencia_gral:.2f}%")
+    else:
+        st.info("No hay registros para calcular la eficiencia general.")
+
+    if proyectos_dict:
+        st.markdown("**🏆 Ranking de Proyectos por Sobrecosto (Mayor a Menor):**")
+        # Indicadores.ranking_proyectos_por_sobrecosto espera una lista de objetos Proyecto
+        ranking_proy = Indicadores.ranking_proyectos_por_sobrecosto(list(proyectos_dict.values()))
+        for i, p_obj in enumerate(ranking_proy):
+            st.markdown(f"&nbsp;&nbsp;{i+1}. {p_obj.nombre}: ${p_obj.desviacion_presupuesto():,.0f}")
+    else:
+        st.info("No hay proyectos para generar el ranking.")
+    st.markdown("---")
+
+
+    # --- Mostrar Análisis por Proyecto, Área y Equipo (Anidado) ---
+    st.subheader("📄 Análisis Detallado por Proyecto, Área y Equipo")
+    if proyectos_dict:
+        for nombre_proyecto, proyecto_obj in sorted(proyectos_dict.items()):
+            if not proyecto_obj.registros: continue
+            with st.expander(f"🏗️ Proyecto: {nombre_proyecto}", expanded=True):
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.markdown(f"**Costos y Desviación:**")
+                    st.markdown(f"&nbsp;&nbsp;- Estimado Total: `${proyecto_obj.costo_total_estimado():,.0f}`")
+                    st.markdown(f"&nbsp;&nbsp;- Real Total: `${proyecto_obj.costo_total_real():,.0f}`")
+                    st.markdown(f"&nbsp;&nbsp;- Desviación Presup.: `${proyecto_obj.desviacion_presupuesto():,.0f}`")
+                with col2:
+                    st.markdown(f"**Rendimiento:**")
+                    st.metric(label="Rendimiento Promedio del Proyecto", value=f"{proyecto_obj.rendimiento_promedio():.2f}%")
+
+                # Análisis por Área dentro de este Proyecto
+                if proyecto_obj.areas:
+                    st.markdown("**Áreas dentro del Proyecto:**")
+                    for nombre_area_proy, area_obj_proy in sorted(proyecto_obj.areas.items()):
+                        st.markdown(f"&nbsp;&nbsp;📍 **{nombre_area_proy}**")
+                        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Eficiencia Promedio: `{area_obj_proy.eficiencia_promedio():.2f}%`")
+                        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Sobrecosto Total en Área: `${area_obj_proy.total_sobrecosto():,.0f}`")
+                else:
+                    st.markdown("_No hay detalle por áreas para este proyecto._")
+                
+                # Análisis por Equipo dentro de este Proyecto
+                if proyecto_obj.equipos:
+                    st.markdown("**Equipos dentro del Proyecto:**")
+                    for nombre_equipo_proy, equipo_obj_proy in sorted(proyecto_obj.equipos.items()):
+                        st.markdown(f"&nbsp;&nbsp;👥 **{nombre_equipo_proy}**")
+                        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Eficiencia Promedio: `{equipo_obj_proy.eficiencia_promedio():.2f}%`")
+                        st.markdown(f"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;- Trabajadores Totales: `{equipo_obj_proy.trabajadores_totales()}`")
+                else:
+                    st.markdown("_No hay detalle por equipos para este proyecto._")
+    else:
+        st.info("No hay datos de proyectos para mostrar análisis detallado.")
+    st.markdown("---")
 
 # --- PASO 3: Visualizaciones Automáticas Recomendadas ---
 st.header("3. Panel de Visualizaciones Recomendadas")
 
 analisis_a_realizar = []
+
+if dataframe_final_limpio is not None and not dataframe_final_limpio.empty:
+    df_numeric_check = dataframe_final_limpio.select_dtypes(include=np.number)
+    if not df_numeric_check.empty and len(df_numeric_check.columns) > 1:
+        analisis_a_realizar.append({
+            "tipo_especial": "heatmap_correlacion", # Un identificador para el heatmap
+            "titulo_seccion": "Heatmap de Correlación General"
+        })
 columnas_univariadas_interes = ['costo_real', 'costo_estimado', 'avance_real', 'avance_estimado', 'cantidad_trabajadores'] 
 for col_name in columnas_univariadas_interes:
     if col_name in dataframe_final_limpio.columns:
@@ -224,35 +272,63 @@ for col1, col2 in pares_bivariados_interes:
     if col1 in dataframe_final_limpio.columns and col2 in dataframe_final_limpio.columns:
         analisis_a_realizar.append({"col1": col1, "col2": col2, "titulo_seccion": f"'{col1}' vs '{col2}'"})
 
-base_fig_w_dinamico = 2.8 
-base_fig_h_dinamico = 2.2 
+base_fig_w_dinamico = 3.0
+base_fig_h_dinamico = 2.5 
 
 st_cols_viz = st.columns(2) 
 col_idx_viz_streamlit = 0
 
 # No se usa st.spinner aquí para mantener el código más corto, pero se podría añadir
 for analisis_info in analisis_a_realizar:
-    with st_cols_viz[col_idx_viz_streamlit % 2]: 
-        st.subheader(f"Análisis para: {analisis_info['titulo_seccion']}")
-        
-        resultado_graficos = generar_graficos_dinamicos(
-            df=dataframe_final_limpio,
-            col1_name=analisis_info["col1"],
-            col2_name=analisis_info["col2"],
-            export_dir=None, 
-            show_plot=False,
-            base_figsize_w=base_fig_w_dinamico, 
-            base_figsize_h=base_fig_h_dinamico
-        )
-        
-        figura_grupo = None
-        if resultado_graficos and isinstance(resultado_graficos, tuple) and len(resultado_graficos) > 0:
-            figura_grupo = resultado_graficos[0] 
-            # El segundo elemento (lista de configs) no se usa aquí para interpretaciones individuales
-        
-        if figura_grupo:
-            st.pyplot(figura_grupo)
-            plt.close(figura_grupo) 
+    with st_cols_viz[col_idx_viz_streamlit % len(st_cols_viz)]: # Usar len(st_cols_viz) para ciclar
+        st.subheader(f"{analisis_info['titulo_seccion']}")
+
+        if analisis_info.get("tipo_especial") == "heatmap_correlacion":
+            with st.spinner("Generando Heatmap de Correlación..."):
+                df_numeric = dataframe_final_limpio.select_dtypes(include=np.number)
+                if df_numeric.shape[1] >= 2:
+                    corr_matrix = df_numeric.corr()
+                    # Ajustar el tamaño del heatmap específicamente aquí si es necesario
+                    # Un heatmap puede necesitar más espacio horizontal
+                    fig_heatmap_width = 6 # Ancho específico para el heatmap
+                    fig_heatmap_height = 4 # Alto específico
+
+                    # Si se muestra en una columna de st_cols_viz, el ancho se controla por la columna
+                    # pero el aspect ratio se controla con figsize.
+                    fig_heatmap, ax_heatmap = plt.subplots(figsize=(fig_heatmap_width, fig_heatmap_height))
+                    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f",
+                                linewidths=.3, ax=ax_heatmap, cbar=True, annot_kws={"size": 7}) # Tamaño de letra en celdas
+                    ax_heatmap.set_title(analisis_info['titulo_seccion'], fontsize=10) # Tamaño de título del plot
+                    ax_heatmap.tick_params(axis='x', labelsize=8, rotation=45) # Tamaño y rotación de etiquetas x
+                    ax_heatmap.tick_params(axis='y', labelsize=8, rotation=0) # Tamaño de etiquetas y
+                    plt.tight_layout(pad=0.5) # Ajustar layout para que quepa todo
+                    st.pyplot(fig_heatmap) # No usar use_container_width=True para controlar figsize manualmente
+                    plt.close(fig_heatmap)
+                else:
+                    st.info("No hay suficientes datos numéricos para el heatmap de correlación.")
+        else:
+            # Lógica para tus gráficos dinámicos normales
+            resultado_graficos = generar_graficos_dinamicos(
+                df=dataframe_final_limpio,
+                col1_name=analisis_info.get("col1"), # Usar .get() por si "tipo_especial" no tiene col1/col2
+                col2_name=analisis_info.get("col2"),
+                export_dir=None,
+                show_plot=False,
+                base_figsize_w=base_fig_w_dinamico,
+                base_figsize_h=base_fig_h_dinamico
+            )
+
+            figura_grupo = None
+            if resultado_graficos and isinstance(resultado_graficos, tuple) and len(resultado_graficos) > 0:
+                figura_grupo = resultado_graficos[0]
+
+            if figura_grupo:
+                st.pyplot(figura_grupo)
+                plt.close(figura_grupo)
+            elif not analisis_info.get("col1"): # Si no hay col1, probablemente era un placeholder no válido
+                st.caption("No se pudo generar gráfico para esta selección.")
+
+
     col_idx_viz_streamlit += 1
 st.markdown("---")
 

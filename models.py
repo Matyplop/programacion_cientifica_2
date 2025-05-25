@@ -57,11 +57,26 @@ class Proyecto:
     def __init__(self, nombre):
         self.nombre = nombre
         self.registros = []
+        self.areas = {} # Para análisis por área dentro de proyecto
+        self.equipos = {} # Para análisis por equipo dentro de proyecto
 
     def agregar_registro(self, registro):
         if not isinstance(registro, Registro):
             raise TypeError("Solo se pueden agregar objetos de tipo Registro")
         self.registros.append(registro)
+
+        # Agregar registro al área correspondiente dentro del proyecto
+        if registro.area:
+            if registro.area not in self.areas:
+                self.areas[registro.area] = Area(registro.area) # Crea instancia de Area si no existe
+            self.areas[registro.area].agregar_registro(registro)
+
+        # Agregar registro al equipo correspondiente dentro del proyecto
+        if registro.equipo:
+            if registro.equipo not in self.equipos:
+                self.equipos[registro.equipo] = Equipo(registro.equipo) # Crea instancia de Equipo si no existe
+            self.equipos[registro.equipo].agregar_registro(registro)
+
 
     def costo_total_estimado(self):
         return sum(r.costo_estimado for r in self.registros)
@@ -77,7 +92,7 @@ class Proyecto:
         total_avance_estimado = sum(r.avance_estimado for r in self.registros)
         total_avance_real = sum(r.avance_real for r in self.registros)
         if total_avance_estimado == 0:
-            return 100.0 if total_avance_real == 0 else 100.0 # O manejo especial
+            return 100.0 if total_avance_real == 0 else 100.0
         return (total_avance_real / total_avance_estimado) * 100
 
     def obtener_alertas_proyecto(self, **kwargs):
@@ -117,3 +132,29 @@ class Area:
             if alertas_reg:
                  alertas_area[f"Reg.ID {reg.id} (Proy:{reg.proyecto}, Eq:{reg.equipo})"] = alertas_reg
         return alertas_area
+    
+class Equipo: # Clase que proporcionaste
+    def __init__(self, nombre):
+        self.nombre = nombre
+        self.registros = []
+
+    def agregar_registro(self, registro):
+        self.registros.append(registro)
+
+    def eficiencia_promedio(self):
+        eficiencias = [r.eficiencia() for r in self.registros]
+        return sum(eficiencias) / len(eficiencias) if eficiencias else 0
+
+    def trabajadores_totales(self):
+        # Asegúrate que r.trabajadores no sea None y sea numérico antes de sumar
+        return sum(r.trabajadores for r in self.registros if r.trabajadores is not None and isinstance(r.trabajadores, (int, float)))
+
+class Indicadores: # Clase que proporcionaste
+    @staticmethod
+    def ranking_proyectos_por_sobrecosto(proyectos_list): # Espera una lista de objetos Proyecto
+        return sorted(proyectos_list, key=lambda p: p.desviacion_presupuesto(), reverse=True)
+
+    @staticmethod
+    def eficiencia_general(registros_list): # Espera una lista de objetos Registro
+        eficiencias = [r.eficiencia() for r in registros_list if r.avance_estimado > 0]
+        return sum(eficiencias) / len(eficiencias) if eficiencias else 0

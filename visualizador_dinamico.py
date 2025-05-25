@@ -190,6 +190,8 @@ class GestorDeGraficos:
                     _plot_barra(ax=ax, df=self.df.copy(), **plot_kwargs, titulo=plot_descripcion, es_conteo=False)
                 elif plot_type == "boxplot_bivariado":
                     _plot_boxplot(ax=ax, df=self.df.copy(), **plot_kwargs, titulo=plot_descripcion)
+                elif plot_type == "heatmap_correlacion": # Nueva condición
+                    _plot_heatmap_correlacion(ax=ax, df=self.df.copy(), titulo=plot_descripcion)
                 # Añadir aquí más elif para "violin" o "area" si se reincorporan a _obtener_recomendaciones
                 else:
                     ax.text(0.5, 0.5, f"Tipo '{plot_type}'\nno implementado", ha='center', va='center', color='red', fontsize=8)
@@ -233,3 +235,19 @@ def generar_graficos_dinamicos(df: pd.DataFrame, col1_name: str, col2_name: str 
             
     manager = GestorDeGraficos(df)
     return manager.generar_visualizaciones(col1_name, col2_name, export_dir, show_plot, base_figsize_w, base_figsize_h)
+
+def _plot_heatmap_correlacion(ax: plt.Axes, df: pd.DataFrame, titulo: str = ""):
+    df_numeric = df.select_dtypes(include=np.number)
+    if df_numeric.shape[1] < 2: # Necesitas al menos dos columnas numéricas
+        ax.text(0.5, 0.5, "No hay suficientes\ncolumnas numéricas\npara un heatmap.",
+                ha='center', va='center', fontsize=8, color='gray')
+        ax.set_title(titulo + " (Datos Insuficientes)", fontsize=9)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        return
+
+    corr_matrix = df_numeric.corr()
+    sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', fmt=".2f",
+                linewidths=.3, ax=ax, cbar=True, annot_kws={"size": 6}) # Ajustar tamaño de anotación
+    ax.set_title(titulo, fontsize=9)
+    ax.tick_params(axis='both', labelsize=7, rotation=45) # Ajustar ticks para mejor visualización
