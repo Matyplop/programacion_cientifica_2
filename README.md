@@ -1,6 +1,6 @@
 # Análisis de Proyectos Nualart (Aplicación Streamlit)
 
-Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyendo limpieza de datos, cálculos de indicadores de rendimiento mediante un modelo de objetos, y generación de visualizaciones dinámicas.
+Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyendo limpieza de datos, cálculos de indicadores de rendimiento mediante un modelo de objetos, y generación de graficos.
 
 ## 🖼️ Características Principales
 
