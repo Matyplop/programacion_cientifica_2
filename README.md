@@ -4,10 +4,10 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
 
 ## 🖼️ Características Principales
 
-* **Carga de Datos:** Carga un dataset de proyectos desde un archivo CSV.
-* **Limpieza de Datos:** Aplica varios pasos de limpieza (manejo de nulos, detección y eliminación de outliers) utilizando la clase `DataCleaner`.
+* **Carga de Datos:** Se carga un dataset de proyectos desde un archivo CSV.
+* **Limpieza de Datos:** Se aplica varios pasos de limpieza (manejo de nulos, detección y eliminación de outliers) utilizando la clase `DataCleaner`.
 * **Análisis Orientado a Objetos:** Utiliza las clases `Registro`, `Proyecto`, `Area`, `Equipo` e `Indicadores` para calcular métricas de negocio (costos, desviaciones, eficiencia, rankings).
-* **Visualización Dinámica:** Genera automáticamente gráficos recomendados (histogramas, boxplots, dispersión, heatmaps) para análisis univariado y bivariado utilizando la clase `GestorDeGraficos`.
+* **Visualización Dinámica:** Se generan automáticamente gráficos recomendados (histogramas, boxplots, dispersión, heatmaps) para análisis utilizando la clase `GestorDeGraficos`.
 * **Interfaz Interactiva:** Presenta los resultados en una aplicación web fácil de usar construida con Streamlit.
 
 ## 🛠️ Estructura del Proyecto
@@ -15,10 +15,10 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
 * `app.py`: Script principal de la aplicación Streamlit.
 * `data_cleaner.py`: Contiene la clase `DataCleaner` para la limpieza de datos.
 * `models.py`: Define las clases `Registro`, `Proyecto`, `Area`, `Equipo` e `Indicadores`.
-* `visualizador_dinamico.py`: Contiene la clase `GestorDeGraficos` y funciones auxiliares para la generación de gráficos.
-* `dataset_con_nulos_outliers.csv`: Dataset de ejemplo utilizado por la aplicación (o el nombre de tu archivo).
+* `visualizador_dinamico.py`: Contiene la clase `GestorDeGraficos` y funciones para la generación de gráficos.
+* `dataset_con_nulos_outliers.csv`: Dataset utilizado en la aplicación
 * `requirements.txt`: Lista de dependencias de Python.
-* `tests/` (Opcional, para pruebas): Carpeta donde residirán tus archivos de prueba.
+* `tests/` (para los test): archivos de prueba.
 
 
 
