@@ -20,20 +20,17 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
 * `requirements.txt`: Lista de dependencias de Python.
 * `tests/` (Opcional, para pruebas): Carpeta donde residirán tus archivos de prueba.
 
-## ⚙️ Requisitos Previos
 
-* Python 3.9 o superior
-* pip (manejador de paquetes de Python)
 
 ## 🚀 Instalación y Configuración
 
-1.  **Clonar el repositorio (si ya está en GitHub):**
+1.  **Clonar el repositorio:**
     ```bash
     git clone [URL_DE_TU_REPOSITORIO_EN_GITHUB]
     cd [NOMBRE_DE_LA_CARPETA_DEL_PROYECTO]
     ```
 
-2.  **Crear un entorno virtual (recomendado):**
+2.  **Crear un entorno virtual:**
     ```bash
     python -m venv venv
     ```
