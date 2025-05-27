@@ -26,33 +26,19 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
 
 1.  **Clonar el repositorio:**
     ```bash
-    git clone [URL_DE_TU_REPOSITORIO_EN_GITHUB]
-    cd [NOMBRE_DE_LA_CARPETA_DEL_PROYECTO]
+    git clone (https://github.com/Matyplop/programacion_cientifica_2.git)
+    
     ```
 
-2.  **Crear un entorno virtual:**
-    ```bash
-    python -m venv venv
-    ```
-    * En Windows:
-        ```bash
-        venv\Scripts\activate
-        ```
-    * En macOS/Linux:
-        ```bash
-        source venv/bin/activate
-        ```
+
 
 3.  **Instalar las dependencias:**
-    Asegúrate de tener un archivo `requirements.txt`. Si no lo tienes, puedes crearlo con:
-    ```bash
-    pip freeze > requirements.txt
-    ```
-    Luego, instala las dependencias:
+   
+    Instalar las dependencias:
     ```bash
     pip install -r requirements.txt
     ```
-    Las dependencias clave probablemente son:
+    Las dependencias clave son:
     * streamlit
     * pandas
     * numpy
@@ -60,11 +46,11 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
     * seaborn
 
 4.  **Dataset:**
-    Asegúrate de que el archivo `dataset_con_nulos_outliers.csv` (o el nombre que uses) esté en la raíz del proyecto o ajusta la ruta en `app.py`.
+    `dataset_con_nulos_outliers.csv` 
 
 ## ▶️ Cómo Ejecutar la Aplicación
 
-Desde la carpeta raíz de tu proyecto (con el entorno virtual activado), ejecuta:
+Desde la carpeta raíz de del proyecto se ejecuta:
 
 ```bash
 streamlit run app.py
