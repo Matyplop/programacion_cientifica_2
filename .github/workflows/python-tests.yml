@@ -1,0 +1,29 @@
+name: Python Tests
+
+on: [push, pull_request] # Se ejecuta en cada push y pull request
+
+jobs:
+  build:
+    runs-on: ubuntu-latest # Puedes elegir otros SO como windows-latest o macos-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"] # Prueba con varias versiones de Python
+
+    steps:
+    - uses: actions/checkout@v4 # Paso 1: Obtiene el código de tu repositorio
+      with:
+        fetch-depth: 0 # Necesario para algunas acciones que requieren el historial completo
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5 # Paso 2: Configura la versión de Python especificada
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: | # Paso 3: Instala las dependencias
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Test with pytest
+      run: | # Paso 4: Ejecuta pytest
+        pytest
