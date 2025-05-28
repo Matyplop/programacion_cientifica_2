@@ -52,5 +52,12 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
 
 Desde la carpeta raíz de del proyecto se ejecuta:
 
+
+`python -m streamlit run app.py` 
+
+## ▶️ Cómo Ejecutar los test
+
+Desde la carpeta raíz de del proyecto se ejecuta:
+
 ```bash
-streamlit run app.py
+python -m pytest
