@@ -1,29 +1,60 @@
+
 name: Python Tests
 
-on: [push, pull_request] # Se ejecuta en cada push y pull request
+# Define los eventos que activarán la ejecución de este flujo de trabajo.
+on:
+  # Se ejecuta cuando se hace un 'push'
+  push:
+  # Se ejecuta cuando se crea
+  pull_request:
 
+# Define uno o más trabajos (jobs) que se ejecutarán como parte de este flujo de trabajo.
+# Los trabajos se ejecutan en paralelo por defecto
 jobs:
+
   build:
-    runs-on: ubuntu-latest # Puedes elegir otros SO como windows-latest o macos-latest
+    
+  
+    runs-on: ubuntu-latest
+
+    # Define una estrategia de matriz para ejecutar el trabajo múltiples veces con diferentes configuraciones.
+    # En este caso, se ejecutará una vez por cada versión de Python especificada.
     strategy:
       matrix:
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"] # Prueba con varias versiones de Python
+        # Lista de versiones de Python con las que se probará el código.
+        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"] 
 
+    # Define la secuencia de pasos que componen el trabajo.
     steps:
-    - uses: actions/checkout@v4 # Paso 1: Obtiene el código de tu repositorio
+    # Paso 1: Descargar el código del repositorio.
+   
+    - uses: actions/checkout@v4
       with:
-        fetch-depth: 0 # Necesario para algunas acciones que requieren el historial completo
+       
+      
+        fetch-depth: 0
 
+    # Paso 2: Configurar el entorno de Python.
+ 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5 # Paso 2: Configura la versión de Python especificada
+      uses: actions/setup-python@v5
       with:
+      
+        
         python-version: ${{ matrix.python-version }}
 
+    # Paso 3: Instalar las dependencias del proyecto.
     - name: Install dependencies
-      run: | # Paso 3: Instala las dependencias
+      run: |
+        # Actualiza pip, el gestor de paquetes de Python, a su última versión.
         python -m pip install --upgrade pip
+        # Instala las dependencias listadas en el archivo 'requirements.txt'.
+        # Este archivo debe estar en la raíz de tu repositorio.
         pip install -r requirements.txt
 
+    # Paso 4: Ejecutar las pruebas con pytest.
     - name: Test with pytest
-      run: | # Paso 4: Ejecuta pytest
+      run: |
+        # Ejecuta el comando 'pytest'. Pytest descubrirá y ejecutará automáticamente
+        # los archivos de prueba en tu proyecto.
         pytest
