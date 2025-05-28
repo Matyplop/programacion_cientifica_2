@@ -230,22 +230,7 @@ class GestorDeGraficos:
        
 
     def _obtener_recomendaciones(self, col1_name: str, col2_name: str = None) -> list:
-        """
-        Genera una lista de recomendaciones de tipos de gráficos y sus configuraciones
-        basándose en los tipos de las columnas proporcionadas.
-
-            col1_name (str): Nombre de la primera columna para el análisis.
-            col2_name: Nombre de la segunda columna para análisis bivariado.
-                                       Si es None, se realiza análisis univariado para `col1_name`.
-                            
-
-            list: Una lista de diccionarios. Cada diccionario representa una recomendación de gráfico
-                  y contiene:
-                  - "plot_type" (str): El tipo de gráfico
-                  - "kwargs" (dict): Argumentos clave-valor para la función de ploteo.
-                  - "descripcion" (str): Una descripción textual del gráfico.
-                  Retorna una lista vacía si las columnas no existen en el DataFrame.
-        """
+    
         if col1_name not in self.df.columns or (col2_name and col2_name not in self.df.columns):
             print(f"Advertencia: Una o ambas columnas ('{col1_name}', '{col2_name}') no se encuentran en el DataFrame.")
             return []
@@ -292,24 +277,7 @@ class GestorDeGraficos:
                                 base_figsize_w: float = 3.5,
                                 base_figsize_h: float = 2.8
                                ) -> tuple:
-        """
-        Genera una figura de Matplotlib con múltiples subplots basados en las
-        recomendaciones obtenidas para las columnas dadas.
-
-            col1_name (str): Nombre de la primera columna.
-            col2_name: Nombre de la segunda columna.
-            export_dir: Directorio para guardar la figura generada.
-                                        Si es None, no se guarda.
-            show_plot: Si True, muestra la figura usando `plt.show()`.
-                                        
-            base_figsize_w: Ancho base para cada subplot.
-            base_figsize_h: Alto base para cada subplot.
-
-                   - fig (matplotlib.figure.Figure): La figura generada con los subplots.
-                                                    None si no hay recomendaciones.
-                   - recomendaciones (list): La lista de configuraciones de gráficos utilizadas.
-                
-        """
+       
         recomendaciones = self._obtener_recomendaciones(col1_name, col2_name)
 
         if not recomendaciones:
@@ -318,7 +286,6 @@ class GestorDeGraficos:
 
         num_recomendaciones = len(recomendaciones)
 
-        # Determinar disposición de subplots
         if num_recomendaciones == 1: ncols, nrows = 1, 1
         elif num_recomendaciones == 2: ncols, nrows = 2, 1
         elif num_recomendaciones == 3: ncols, nrows = 2, 2 # Preferir 2x2 para 3 plots, dejando uno vacío
@@ -401,19 +368,7 @@ def generar_graficos_dinamicos(df: pd.DataFrame, col1_name: str, col2_name: str 
                                base_figsize_w: float = 3.5,
                                base_figsize_h: float = 2.8
                               ) -> tuple:
-    """
-    Función principal para generar visualizaciones dinámicas.
-    Crea una instancia de `GestorDeGraficos` y llama a su método `generar_visualizaciones`.
-
-        df (pd.DataFrame): El DataFrame de Pandas a analizar.
-        col1_name (str): Nombre de la primera columna.
-        col2_name : Nombre de la segunda columna.
-        export_dir : Directorio para guardar la figura.
-        show_plot: Si True, muestra la figura.
-        base_figsize_w : Ancho base para cada subplot.
-        base_figsize_h : Alto base para cada subplot.
-
-    """
+ 
     if not isinstance(df, pd.DataFrame) or df.empty:
         print("Error: Se requiere un DataFrame de Pandas no vacío.")
         return None, [], []
