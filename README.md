@@ -44,6 +44,9 @@ Esta aplicación Streamlit realiza un análisis de datos de proyectos, incluyend
     * numpy
     * matplotlib
     * seaborn
+    * sys
+    * os
+    * pytest
 
 4.  **Dataset:**
     `dataset_con_nulos_outliers.csv` 
